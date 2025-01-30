@@ -1,31 +1,27 @@
+// Change the money value to PESOS.
+// GUI
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HotelSystem
+namespace Program
 {
-    // Enum for room status
-    public enum RoomStatus
+    // User class
+    public class User
     {
-        Vacant,
-        Occupied,
-        UnderMaintenance
-    }
-
-    // Enum for room type
-    public enum RoomType
-    {
-        Standard,
-        Deluxe,
-        Suite
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Role { get; set; } // e.g., Admin, FrontDesk, Housekeeping, Guest
     }
 
     // Room class
     public class Room
     {
         public int RoomNumber { get; set; }
-        public RoomType Type { get; set; }
-        public RoomStatus Status { get; set; }
+        public string Type { get; set; } // e.g., "Standard", "Deluxe", "Suite"
+        public string Status { get; set; } // e.g., "Vacant", "Occupied", "UnderMaintenance"
         public decimal PricePerNight { get; set; }
     }
 
@@ -54,24 +50,55 @@ namespace HotelSystem
         public List<Room> Rooms { get; set; } = new List<Room>();
         public List<Guest> Guests { get; set; } = new List<Guest>();
         public List<Booking> Bookings { get; set; } = new List<Booking>();
+        public List<User> Users { get; set; } = new List<User>();
 
-        // Add a new room
-        public void AddRoom(int roomNumber, RoomType type, decimal pricePerNight)
+        // Initialize default rooms
+        public void InitializeRooms()
         {
-            Rooms.Add(new Room
+            for (int i = 1; i <= 500; i++)
             {
-                RoomNumber = roomNumber,
-                Type = type,
-                Status = RoomStatus.Vacant,
-                PricePerNight = pricePerNight
+                string roomType = "Standard"; // Default type for all rooms
+                decimal pricePerNight = 100; // Default price for all rooms
+
+                // Customize room types and prices based on room number
+                if (i % 100 == 0) // Every 100th room is Deluxe
+                {
+                    roomType = "Deluxe";
+                    pricePerNight = 150;
+                }
+                else if (i % 50 == 0) // Every 50th room is Suite
+                {
+                    roomType = "Suite";
+                    pricePerNight = 200;
+                }
+
+                Rooms.Add(new Room
+                {
+                    RoomNumber = i,
+                    Type = roomType,
+                    Status = "Vacant",
+                    PricePerNight = pricePerNight
+                });
+            }
+        }
+
+        // Add a new user
+        public void AddUser(string username, string password, string role)
+        {
+            Users.Add(new User
+            {
+                Id = Users.Count + 1,
+                Username = username,
+                Password = password,
+                Role = role
             });
-            Console.WriteLine($"Room {roomNumber} added successfully!");
+            Console.WriteLine($"User  {username} added successfully!");
         }
 
         // Book a room
         public void BookRoom(string guestName, string contactInfo, int roomNumber, DateTime checkInDate, DateTime checkOutDate)
         {
-            var room = Rooms.FirstOrDefault(r => r.RoomNumber == roomNumber && r.Status == RoomStatus.Vacant);
+            var room = Rooms.FirstOrDefault(r => r.RoomNumber == roomNumber && r.Status == "Vacant");
             if (room == null)
             {
                 Console.WriteLine("Room is not available.");
@@ -101,15 +128,15 @@ namespace HotelSystem
 
             Bookings.Add(booking);
             guest.Bookings.Add(booking);
-            room.Status = RoomStatus.Occupied;
+            room.Status = "Occupied";
 
-            Console.WriteLine($"Booking successful! Booking ID: {bookingId}, Total Cost: {totalCost}");
+            Console.WriteLine($"Booking successful ! Booking ID: {bookingId}, Total Cost: {totalCost}");
         }
 
         // Check-out a guest
         public void CheckOut(int roomNumber)
         {
-            var room = Rooms.FirstOrDefault(r => r.RoomNumber == roomNumber && r.Status == RoomStatus.Occupied);
+            var room = Rooms.FirstOrDefault(r => r.RoomNumber == roomNumber && r.Status == "Occupied");
             if (room == null)
             {
                 Console.WriteLine("Room is not occupied.");
@@ -120,7 +147,7 @@ namespace HotelSystem
             if (booking != null)
             {
                 Console.WriteLine($"Guest {booking.GuestName} checked out. Total bill: {booking.TotalCost}");
-                room.Status = RoomStatus.Vacant;
+                room.Status = "Vacant";
             }
             else
             {
@@ -147,6 +174,25 @@ namespace HotelSystem
                 Console.WriteLine($"Booking ID: {booking.BookingId}, Room: {booking.RoomNumber}, Guest: {booking.GuestName}, Check-In: {booking.CheckInDate.ToShortDateString()}, Check-Out: {booking.CheckOutDate.ToShortDateString()}, Total Cost: {booking.TotalCost}");
             }
         }
+
+        // User login
+        public User Login(string username, string password)
+        {
+            return Users.FirstOrDefault(u => u.Username == username && u.Password == password);
+        }
+
+        // User registration
+        public bool Register(string username, string password, string role)
+        {
+            if (Users.Any(u => u.Username == username))
+            {
+                Console.WriteLine("Username already exists. Please choose a different username.");
+                return false;
+            }
+
+            AddUser(username, password, role);
+            return true;
+        }
     }
 
     // Main program
@@ -155,62 +201,135 @@ namespace HotelSystem
         static void Main(string[] args)
         {
             Hotel hotel = new Hotel();
-
-            // Add some rooms
-            hotel.AddRoom(101, RoomType.Standard, 100);
-            hotel.AddRoom(102, RoomType.Deluxe, 150);
-            hotel.AddRoom(103, RoomType.Suite, 200);
+            hotel.InitializeRooms(); // Initialize default rooms
 
             while (true)
             {
-                Console.WriteLine("\nHotel Room Reservation and Management System");
-                Console.WriteLine("1. Display Rooms");
-                Console.WriteLine("2. Book a Room");
-                Console.WriteLine("3. Check-Out");
-                Console.WriteLine("4. Display Bookings");
-                Console.WriteLine("5. Exit");
+                Console.WriteLine("Welcome to the Hotel Management System");
+                Console.WriteLine("1. Register");
+                Console.WriteLine("2. Login");
+                Console.WriteLine("3. Exit");
                 Console.Write("Enter your choice: ");
-                string choice = Console.ReadLine();
+                string mainChoice = Console.ReadLine();
 
-                switch (choice)
+                if (mainChoice == "1")
                 {
-                    case "1":
-                        hotel.DisplayRooms();
-                        break;
+                    Console.Clear();
+                    Console.Write("Enter username: ");
+                    string username = Console.ReadLine();
+                    Console.Write("Enter password: ");
+                    string password = Console.ReadLine();
+                    Console.Write("Enter role (Admin, FrontDesk, Housekeeping, Guest): ");
+                    string role = Console.ReadLine();
+                    Console.Clear();
+                    hotel.Register(username, password, role);
+                }
+                else if (mainChoice == "2")
+                {
+                    Console.Clear();
+                    Console.Write("Enter username: ");
+                    string username = Console.ReadLine();
+                    Console.Write("Enter password: ");
+                    string password = Console.ReadLine();
 
-                    case "2":
-                        Console.Write("Enter guest name: ");
-                        string guestName = Console.ReadLine();
-                        Console.Write("Enter contact info: ");
-                        string contactInfo = Console.ReadLine();
-                        Console.Write("Enter room number: ");
-                        int roomNumber = int.Parse(Console.ReadLine());
-                        Console.Write("Enter check-in date (yyyy-mm-dd): ");
-                        DateTime checkInDate = DateTime.Parse(Console.ReadLine());
-                        Console.Write("Enter check-out date (yyyy-mm-dd): ");
-                        DateTime checkOutDate = DateTime.Parse(Console.ReadLine());
-                        hotel.BookRoom(guestName, contactInfo, roomNumber, checkInDate, checkOutDate);
-                        break;
+                    User loggedInUser = hotel.Login(username, password);
+                    if (loggedInUser == null)
+                    {
+                        Console.WriteLine("Invalid username or password. Please try again.");
+                        continue;
+                    }
 
-                    case "3":
-                        Console.Write("Enter room number to check-out: ");
-                        int checkOutRoomNumber = int.Parse(Console.ReadLine());
-                        hotel.CheckOut(checkOutRoomNumber);
-                        break;
+                    while (true)
+                    {
+                        Console.WriteLine($"\nWelcome {loggedInUser.Username} ({loggedInUser.Role})");
+                        Console.WriteLine("1. Display Rooms");
+                        Console.WriteLine("2. Book a Room");
+                        Console.WriteLine("3. Check-Out");
+                        Console.WriteLine("4. Display Bookings");
+                        Console.WriteLine("5. Logout");
+                        Console.Write("Enter your choice: ");
+                        string choice = Console.ReadLine();
 
-                    case "4":
-                        hotel.DisplayBookings();
-                        break;
+                        switch (choice)
+                        {
+                            case "1":
+                                hotel.DisplayRooms();
+                                break;
 
-                    case "5":
-                        Console.WriteLine("Exiting the system. Goodbye!");
-                        return;
+                            case "2":
+                                Console.Clear();
+                                if (loggedInUser.Role == "FrontDesk" || loggedInUser.Role == "Admin")
+                                {
+                                    Console.Write("Enter guest name: ");
+                                    string guestName = Console.ReadLine();
+                                    Console.Write("Enter contact info: ");
+                                    string contactInfo = Console.ReadLine();
+                                    Console.Write("Enter room number: ");
+                                    int roomNumber = int.Parse(Console.ReadLine());
+                                    Console.Write("Enter check-in date (yyyy-mm-dd): ");
+                                    DateTime checkInDate = DateTime.Parse(Console.ReadLine());
+                                    Console.Write("Enter check-out date (yyyy-mm-dd): ");
+                                    DateTime checkOutDate = DateTime.Parse(Console.ReadLine());
+                                    hotel.BookRoom(guestName, contactInfo, roomNumber, checkInDate, checkOutDate);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("You do not have permission to book a room.");
+                                }
+                                break;
 
-                    default:
-                        Console.WriteLine("Invalid choice. Please try again.");
-                        break;
+                            case "3":
+                                Console.Clear();
+                                if (loggedInUser.Role == "FrontDesk" || loggedInUser.Role == "Admin")
+                                {
+                                    Console.Write("Enter room number to check-out: ");
+                                    int checkOutRoomNumber = int.Parse(Console.ReadLine());
+                                    hotel.CheckOut(checkOutRoomNumber);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("You do not have permission to check-out a room.");
+                                }
+                                break;
+
+                            case "4":
+                                Console.Clear();
+                                if (loggedInUser.Role == "Admin" || loggedInUser.Role == "FrontDesk")
+                                {
+                                    hotel.DisplayBookings();
+                                }
+                                else
+                                {
+                                    Console.WriteLine("You do not have permission to view bookings.");
+                                }
+                                break;
+
+                            case "5":
+                                Console.Clear();
+                                Console.WriteLine("Logging out...");
+                                break;
+
+                            default:
+                                Console.WriteLine("Invalid choice. Please try again.");
+                                break;
+                        }
+
+                        if (choice == "5")
+                        {
+                            break;
+                        }
+                    }
+                }
+                else if (mainChoice == "3")
+                {
+                    Console.WriteLine("Exiting the system. Goodbye!");
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid choice. Please try again.");
                 }
             }
         }
     }
-}
+}   
