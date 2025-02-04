@@ -1,0 +1,67 @@
+using System;
+using System.Collections.Generic;
+
+namespace GroceryStore
+{
+    class GroceryStoreDiscountCalculator
+    {
+        static void Main()
+        {
+            double totalCost = 0;
+            double discount = 0;
+            double finalAmount = 0;
+
+            List<(string Name, int quantity, double pricePerUnit)> itemsBought = new List<(string, int, double)>();
+
+            while (true)
+            {
+                Console.Write("\nEnter item name: ");
+                string itemName = Console.ReadLine();
+
+                Console.Write("Enter quantity: ");
+                int quantity = int.Parse(Console.ReadLine());
+
+                Console.Write("Enter price per unit: ");
+                double pricePerUnit = double.Parse(Console.ReadLine());
+
+                double itemCost = quantity * pricePerUnit;
+                totalCost += itemCost;
+
+                itemsBought.Add((itemName, quantity, pricePerUnit));
+
+                Console.Write("Do you want to add another item? (yes/no): ");
+                string addAnother = Console.ReadLine().ToLower();
+
+                if (addAnother != "yes")
+                {
+                    break;
+                }
+            }
+
+            if (totalCost > 500)
+            {
+                discount = totalCost * 0.20;
+            }
+            else if (totalCost > 200)
+            {
+                discount = totalCost * 0.15;
+            }
+            else if (totalCost > 100)
+            {
+                discount = totalCost * 0.10;
+            }
+
+            finalAmount = totalCost - discount;
+
+            Console.WriteLine("\n--- Receipt ---");
+            Console.WriteLine("Items Bought: ");
+            foreach (var item in itemsBought)
+            {
+                Console.WriteLine($"{item.Name} (Quantity: {item.quantity}, Price per Unit: ${item.pricePerUnit})");
+            }
+            Console.WriteLine($"Total Cost Before Discount: ${totalCost}");
+            Console.WriteLine($"Discount Applied: -${discount}");
+            Console.WriteLine($"Final Amount to Pay: ${finalAmount}");
+        }
+    }
+}
