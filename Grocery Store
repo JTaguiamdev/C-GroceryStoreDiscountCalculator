@@ -1,3 +1,5 @@
+using System;
+
 namespace Grocery_Store_Discount_Calculator
 {
     internal class Program
@@ -11,17 +13,27 @@ namespace Grocery_Store_Discount_Calculator
 
             string choice, item;
             int quantity;
-            decimal totalCost = 0.00m, discount = 0.00m, finalCost = 0.000m;
+            decimal totalCost = 0.00m, discount = 0.00m, finalCost = 0.000m, price = 0.00m;
 
-            int itemCount = 0, j = 0, k = 0;
+            int itemCount = 0;
 
             do
             {
                 Console.Write("Enter an item name: ");
                 item = Console.ReadLine();
 
-                // Check if the item already exists
-                int existingItemIndex = Array.IndexOf(items, item);
+                // Check if the item already exists (case-insensitive)
+                int existingItemIndex = -1;
+                for (int i = 0; i < itemCount; i++)
+                {
+                    // Convert both strings to lower case for comparison
+                    if (items[i].ToLower() == item.ToLower())
+                    {
+                        existingItemIndex = i;
+                        break;
+                    }
+                }
+
                 if (existingItemIndex != -1)
                 {
                     // Item exists, update the quantity
@@ -35,7 +47,7 @@ namespace Grocery_Store_Discount_Calculator
                     Console.Write("Enter quantity: ");
                     quantity = Convert.ToInt32(Console.ReadLine());
                     Console.Write("Enter price: ");
-                    decimal price = Convert.ToDecimal(Console.ReadLine());
+                    price = Convert.ToDecimal(Console.ReadLine());
 
                     items[itemCount] = item;
                     quantities[itemCount] = quantity;
@@ -70,7 +82,7 @@ namespace Grocery_Store_Discount_Calculator
             Console.WriteLine("Grocery List\t\tQuanties\t\tPrice");
             for (int i2 = 0; i2 < itemCount; ++i2)
             {
-                Console.WriteLine($"{items[i2]}\t\t{quantities[i2]}\t\t\t${prices[i2]:F2}");
+                Console.WriteLine($"{items[i2]}\t\t\t{quantities[i2]}\t\t\t${prices[i2]:F2}");
             }
             Console.WriteLine("--------------------------------------------------------");
             Console.WriteLine($"Total Cost:\t\t\t\t\t ${totalCost:F2}");
